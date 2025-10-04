@@ -18,7 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.android.learning.securitysnack.ui.enums.Screens
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.android.learning.securitysnack.database.AppDatabase
+import com.android.learning.securitysnack.ui.sealed.Screens
 import com.android.learning.securitysnack.ui.screens.Notes
 import com.android.learning.securitysnack.ui.theme.SecuritysnackTheme
 import com.android.learning.securitysnack.viewmodels.MainViewModel
@@ -26,24 +29,33 @@ import com.android.learning.securitysnack.viewmodels.MainViewModel
 class MainActivity : ComponentActivity() {
     var screens: Screens by  mutableStateOf(Screens.Home)
 
+    lateinit var database: RoomDatabase
+
     lateinit var mainViewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        database = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "security-snack-db"
+        ).build()
+        mainViewModel = MainViewModel()
         setContent {
             SecuritysnackTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     when(screens) {
                         Screens.Home -> Home(modifier = Modifier.padding(innerPadding), goToNotes = {screens = Screens.Notes})
-                        Screens.Notes -> Notes(modifier = Modifier.padding(innerPadding))
+                        Screens.Notes -> Notes(modifier = Modifier.padding(innerPadding),mainViewModel,database as AppDatabase)
                     }
 
                 }
             }
         }
+
     }
 }
+
 
 @Composable
 fun Home( modifier: Modifier = Modifier, goToNotes: () -> Unit = {}) {
@@ -53,7 +65,6 @@ fun Home( modifier: Modifier = Modifier, goToNotes: () -> Unit = {}) {
             Text("Go to Notes")
         }
     }
-
 
 }
 
