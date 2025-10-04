@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -23,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.learning.securitysnack.database.AppDatabase
 import com.android.learning.securitysnack.database.entity.Note
+import com.android.learning.securitysnack.sealed.Encryption
 import com.android.learning.securitysnack.viewmodels.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,9 +36,13 @@ fun Notes(modifier: Modifier = Modifier,mainViewModel: MainViewModel,database: A
     val scope = rememberCoroutineScope()
     var noteText by remember { mutableStateOf("") }
     var notes : List<Note> by remember { mutableStateOf(emptyList()) }
-    Column(modifier = modifier.padding(20.dp), horizontalAlignment = Alignment.Start) {
+    var encryption: Encryption by remember { mutableStateOf(Encryption.Basic) }
+    Column(modifier = modifier.padding(4.dp), horizontalAlignment = Alignment.Start) {
         Text("Enter your notes below:")
         Spacer(modifier = Modifier.padding(8.dp))
+        DropDown(onSelect = { selected ->
+            encryption = selected
+        })
         Row(horizontalArrangement = Arrangement.Center) {
             TextField(
                 value = noteText,
@@ -43,7 +50,7 @@ fun Notes(modifier: Modifier = Modifier,mainViewModel: MainViewModel,database: A
                 modifier = Modifier.weight(1f)
             )
             TextButton(onClick = {
-                mainViewModel.saveNote(noteText,database)
+                mainViewModel.saveNote(noteText,database,encryption)
                 noteText = ""
             }) {
                 Text("Save")
@@ -74,18 +81,46 @@ fun Notes(modifier: Modifier = Modifier,mainViewModel: MainViewModel,database: A
 fun ShowNotes(notes: List<Note>, delete: (Int) -> Unit = {}) {
     LazyColumn {
         items(notes.size) { index ->
-            BaiscNoteItem(note = notes[index],delete = { delete(notes[index].id) })
+            BasicNoteItem(note = notes[index],delete = { delete(notes[index].id) })
         }
     }
 }
 @Composable
-fun BaiscNoteItem(note: Note,delete: () -> Unit = {}) {
-    Row(modifier = Modifier.padding(20.dp), horizontalArrangement = Arrangement.SpaceBetween,
+fun BasicNoteItem(note: Note,delete: () -> Unit = {}) {
+    Row(modifier = Modifier.padding(4.dp), horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
         Text(text = note.content, modifier = Modifier.weight(1f))
-        Button(onClick = delete) {
+        Text(text = note.encryption.toString(), modifier = Modifier.weight(1f))
+        Button(onClick = delete, modifier = Modifier.weight(1f)) {
             Text("Delete")
         }
 
+    }
+}
+
+
+@Composable
+fun DropDown(modifier: Modifier = Modifier, onSelect: (Encryption) -> Unit = {}) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf(Encryption.DB, Encryption.Basic, Encryption.Intermediate)
+    var selectedOption by remember { mutableStateOf(options[0]) }
+
+    Column(modifier = modifier.padding(20.dp)) {
+        Text("Select your Note Storage encryption")
+        Button(onClick = { expanded = true }) {
+            Text(selectedOption.toString())
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.toString()) },
+                    onClick = {
+                        selectedOption = option
+                        expanded = false
+                        onSelect(option)
+                    }
+                )
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.android.learning.securitysnack.ui.sealed
+package com.android.learning.securitysnack.sealed
 
 sealed class Screens {
     object Home : Screens()

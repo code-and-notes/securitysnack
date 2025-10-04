@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.android.learning.securitysnack.database.AppDatabase
-import com.android.learning.securitysnack.ui.sealed.Screens
+import com.android.learning.securitysnack.sealed.Screens
 import com.android.learning.securitysnack.ui.screens.Notes
 import com.android.learning.securitysnack.ui.theme.SecuritysnackTheme
 import com.android.learning.securitysnack.viewmodels.MainViewModel

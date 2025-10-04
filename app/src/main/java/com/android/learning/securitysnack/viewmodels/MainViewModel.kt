@@ -5,19 +5,22 @@ import androidx.lifecycle.viewModelScope
 import androidx.room.RoomDatabase
 import com.android.learning.securitysnack.database.AppDatabase
 import com.android.learning.securitysnack.database.entity.Note
+import com.android.learning.securitysnack.sealed.Encryption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.security.KeyPairGenerator
 
 class MainViewModel: ViewModel() {
 
-    fun saveNote(note: String,appDatabase: AppDatabase) {
+    fun saveNote(note: String,appDatabase: AppDatabase, encryption: Encryption = Encryption.Basic) {
         viewModelScope.launch(Dispatchers.IO) {
             val content = encryptNote(note)
-            val tempNote = Note(content = content)
+            val tempNote = Note(content = content, encryption = encryption)
             appDatabase.noteDao().insertNote(tempNote)
         }
     }
+
     suspend fun getAllNotes(appDatabase: AppDatabase): List<Note>  = viewModelScope.async(Dispatchers.IO) {
         val notes = appDatabase.noteDao().getAllNotes()
         notes.forEach { note-> note.content = decryptNote(note.content) }
