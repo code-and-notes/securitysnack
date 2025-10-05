@@ -1,5 +1,6 @@
 package com.android.learning.securitysnack.ui.activities
 
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -23,8 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.android.learning.securitysnack.database.AppDatabase
 import com.android.learning.securitysnack.sealed.Screens
+import com.android.learning.securitysnack.ui.screens.ESPScreen
 import com.android.learning.securitysnack.ui.screens.Notes
 import com.android.learning.securitysnack.ui.theme.SecuritysnackTheme
 import com.android.learning.securitysnack.utilities.AppLock
@@ -32,6 +36,8 @@ import com.android.learning.securitysnack.viewmodels.MainViewModel
 
 class MainActivity : FragmentActivity() {
     var screens: Screens by  mutableStateOf(Screens.Home)
+
+    lateinit var securePref: SharedPreferences
 
     lateinit var database: RoomDatabase
 
@@ -47,12 +53,26 @@ class MainActivity : FragmentActivity() {
         ).build()
         mainViewModel = MainViewModel()
         AppLock.promptForAuthentication(this)
+        val masterKey = MasterKey.Builder(this)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        securePref = EncryptedSharedPreferences.create(
+            this.applicationContext,
+            "ESP_File",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
         setContent {
             SecuritysnackTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     when(screens) {
-                        Screens.Home -> Home(modifier = Modifier.padding(innerPadding), goToNotes = {screens = Screens.Notes})
+                        Screens.Home -> Home(modifier = Modifier.padding(innerPadding),
+                            goToNotes = {screens = Screens.Notes},
+                            goToESP = {screens = Screens.ESP}
+                        )
                         Screens.Notes -> Notes(modifier = Modifier.padding(innerPadding),mainViewModel,database as AppDatabase)
+                        Screens.ESP -> ESPScreen(securePref)
                     }
 
                 }
@@ -64,11 +84,17 @@ class MainActivity : FragmentActivity() {
 
 
 @Composable
-fun Home( modifier: Modifier = Modifier, goToNotes: () -> Unit = {}) {
+fun Home( modifier: Modifier = Modifier,
+          goToNotes: () -> Unit = {},
+          goToESP: () -> Unit = {}
+) {
     Column(modifier = modifier.padding(20.dp), horizontalAlignment = Alignment.Start) {
         Text("Welcome to Security Snack!")
         Button(onClick = goToNotes) {
             Text("Go to Notes")
+        }
+        Button(onClick = goToESP) {
+            Text("Go to Encrypted Shared Preferences")
         }
     }
 

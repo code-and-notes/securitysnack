@@ -27,6 +27,7 @@ object AppLock {
                         "Authentication error: $errString", Toast.LENGTH_SHORT
                     )
                         .show()
+                    activity.finish()
                 }
 
                 override fun onAuthenticationSucceeded(
