@@ -28,6 +28,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.android.learning.securitysnack.database.AppDatabase
 import com.android.learning.securitysnack.sealed.Screens
+import com.android.learning.securitysnack.ui.screens.BioAuthHome
 import com.android.learning.securitysnack.ui.screens.ESPScreen
 import com.android.learning.securitysnack.ui.screens.Notes
 import com.android.learning.securitysnack.ui.theme.SecuritysnackTheme
@@ -52,7 +53,6 @@ class MainActivity : FragmentActivity() {
             AppDatabase::class.java, "security-snack-db"
         ).build()
         mainViewModel = MainViewModel()
-        AppLock.promptForAuthentication(this)
         val masterKey = MasterKey.Builder(this)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
@@ -69,10 +69,12 @@ class MainActivity : FragmentActivity() {
                     when(screens) {
                         Screens.Home -> Home(modifier = Modifier.padding(innerPadding),
                             goToNotes = {screens = Screens.Notes},
-                            goToESP = {screens = Screens.ESP}
+                            goToESP = {screens = Screens.ESP},
+                            goToBioAuth = {screens = Screens.BiometricAuth}
                         )
                         Screens.Notes -> Notes(modifier = Modifier.padding(innerPadding),mainViewModel,database as AppDatabase)
                         Screens.ESP -> ESPScreen(securePref)
+                        Screens.BiometricAuth -> BioAuthHome()
                     }
 
                 }
@@ -86,7 +88,8 @@ class MainActivity : FragmentActivity() {
 @Composable
 fun Home( modifier: Modifier = Modifier,
           goToNotes: () -> Unit = {},
-          goToESP: () -> Unit = {}
+          goToESP: () -> Unit = {},
+          goToBioAuth: () -> Unit = {}
 ) {
     Column(modifier = modifier.padding(20.dp), horizontalAlignment = Alignment.Start) {
         Text("Welcome to Security Snack!")
@@ -95,6 +98,9 @@ fun Home( modifier: Modifier = Modifier,
         }
         Button(onClick = goToESP) {
             Text("Go to Encrypted Shared Preferences")
+        }
+        Button(onClick = goToBioAuth) {
+            Text("Go to Biometric Authentication")
         }
     }
 

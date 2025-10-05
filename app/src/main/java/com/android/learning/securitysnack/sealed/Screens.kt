@@ -5,4 +5,6 @@ sealed class Screens {
     object Notes : Screens()
 
     object ESP: Screens()
+
+    object BiometricAuth: Screens()
 }
