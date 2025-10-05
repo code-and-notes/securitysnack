@@ -10,8 +10,10 @@ import com.android.learning.securitysnack.sealed.Encryption
 data class Note(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    @field:TypeConverters(CryptoConverters::class)
-    var content: String,
+    var content: SecureString,
     val timestamp: Long = System.currentTimeMillis(),
     val encryption: Encryption
 )
+
+data class SecureString(
+    val value: String)

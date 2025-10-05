@@ -2,6 +2,7 @@ package com.android.learning.securitysnack.database.converters
 
 import androidx.compose.runtime.simulateHotReload
 import androidx.room.TypeConverter
+import com.android.learning.securitysnack.database.entity.SecureString
 import com.android.learning.securitysnack.sealed.Encryption
 import com.android.learning.securitysnack.utilities.KeyManager
 import java.security.KeyStore
@@ -16,24 +17,24 @@ class CryptoConverters {
 
 
     @TypeConverter
-    fun toEncryptedString(value: String?): ByteArray? {
-        if (value == null) return null
+    fun toEncryptedString(secureString: SecureString?): ByteArray? {
+        if (secureString == null) return null
         val key = KeyManager.getOrCreateSecretKey()
-        val iv = ByteArray(12).also{ SecureRandom().nextBytes(it) }
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE,key, GCMParameterSpec(128, iv))
-        return iv + cipher.doFinal(value.toByteArray())
+        cipher.init(Cipher.ENCRYPT_MODE,key)
+        val iv = cipher.iv
+        return iv + cipher.doFinal(secureString.value.toByteArray())
     }
 
     @TypeConverter
-    fun toDecryptedString(blob: ByteArray?): String? {
+    fun toDecryptedString(blob: ByteArray?): SecureString? {
         if (blob == null) return null
         val key = KeyManager.getOrCreateSecretKey()
         val iv = blob.copyOfRange(0,12)
         val data = blob.copyOfRange(12,blob.size)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE,key, GCMParameterSpec(128, iv))
-        return String(cipher.doFinal(data), Charsets.UTF_8)
+        cipher.init(Cipher.DECRYPT_MODE,key, GCMParameterSpec(128, iv))
+        return SecureString(String(cipher.doFinal(data), Charsets.UTF_8))
     }
 
     @TypeConverter

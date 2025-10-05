@@ -38,11 +38,15 @@ fun Notes(modifier: Modifier = Modifier,mainViewModel: MainViewModel,database: A
     var notes : List<Note> by remember { mutableStateOf(emptyList()) }
     var encryption: Encryption by remember { mutableStateOf(Encryption.Basic) }
     Column(modifier = modifier.padding(4.dp), horizontalAlignment = Alignment.Start) {
+        /*
+        Deprecated
         Text("Enter your notes below:")
         Spacer(modifier = Modifier.padding(8.dp))
         DropDown(onSelect = { selected ->
             encryption = selected
         })
+
+         */
         Row(horizontalArrangement = Arrangement.Center) {
             TextField(
                 value = noteText,
@@ -89,7 +93,7 @@ fun ShowNotes(notes: List<Note>, delete: (Int) -> Unit = {}) {
 fun BasicNoteItem(note: Note,delete: () -> Unit = {}) {
     Row(modifier = Modifier.padding(4.dp), horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
-        Text(text = note.content, modifier = Modifier.weight(1f))
+        Text(text = note.content.value, modifier = Modifier.weight(1f))
         Text(text = note.encryption.toString(), modifier = Modifier.weight(1f))
         Button(onClick = delete, modifier = Modifier.weight(1f)) {
             Text("Delete")

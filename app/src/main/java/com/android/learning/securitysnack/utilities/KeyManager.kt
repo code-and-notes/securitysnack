@@ -13,6 +13,7 @@ object KeyManager {
 
     fun getOrCreateSecretKey(): SecretKey {
         val ks = KeyStore.getInstance(ANDROID_KEY_STORE)
+        ks.load(null)
         val isKeyGenerated = ks.containsAlias(ALIAS)
         if (isKeyGenerated) {
             val entry = (ks.getEntry(ALIAS, null) as KeyStore.SecretKeyEntry).secretKey
