@@ -19,3 +19,19 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Keep Tink and related annotations
+-keep class com.google.crypto.tink.** { *; }
+-keep class com.google.errorprone.annotations.** { *; }
+-keep class javax.annotation.** { *; }
+
+# Ignore missing Google API Client classes
+-dontwarn com.google.api.client.http.**
+-dontwarn com.google.api.client.**
+
+# Ignore missing Joda Time classes
+-dontwarn org.joda.time.**
+
+# Ignore missing javax.lang.model classes
+-dontwarn javax.lang.model.**
+
+
