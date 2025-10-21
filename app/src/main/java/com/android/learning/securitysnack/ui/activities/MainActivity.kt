@@ -31,6 +31,7 @@ import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.android.learning.securitysnack.db.NotesDatabase
+import com.android.learning.securitysnack.ui.screens.BioAuthScreen
 import com.android.learning.securitysnack.ui.screens.ESPScreen
 import com.android.learning.securitysnack.ui.screens.NotesScreen
 import com.android.learning.securitysnack.ui.sealed.ScreenState
@@ -50,7 +51,7 @@ class MainActivity : FragmentActivity() {
     lateinit var masterKey: MasterKey
     lateinit var sharedPreferences: SharedPreferences
 
-    @RequiresApi(Build.VERSION_CODES.P)
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -84,7 +85,9 @@ class MainActivity : FragmentActivity() {
                         is ScreenState.ESP -> {
                             ESPScreen(modifier,sharedPreferences)
                         }
-                        is ScreenState.BioAuth -> {}
+                        is ScreenState.BioAuth -> {
+                            BioAuthScreen(modifier)
+                        }
                     }
                     BackHandler {
                         backClick()
@@ -108,6 +111,9 @@ fun Home( modifier: Modifier = Modifier,
         }
         Button(onClick = {mainviewModel.screenState.value = ScreenState.ESP}) {
             Text("Go to encrypted shared pref screen")
+        }
+        Button(onClick = {mainviewModel.screenState.value = ScreenState.BioAuth}) {
+            Text("Go to BioAuth screen")
         }
 
 

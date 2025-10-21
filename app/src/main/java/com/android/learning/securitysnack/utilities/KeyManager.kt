@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import java.security.AlgorithmParameters
 import java.security.KeyStore
 import java.security.spec.AlgorithmParameterSpec
+import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
@@ -38,5 +39,13 @@ object KeyManager {
             .build()
         kg.init(keyGenParameterSpec)
         return kg.generateKey()
+    }
+
+    fun getDecryptCipherOrThrow(): Cipher {
+        val ks = KeyStore.getInstance(ANDROID_KEY_STORE).apply { load(null) }
+        val secretKey = ks.getKey(BioAuthEnum.ALIAS.value,null) as SecretKey
+        return Cipher.getInstance(BioAuthEnum.CIPHER.value).apply {
+            init(Cipher.ENCRYPT_MODE,secretKey)
+        }
     }
 }
