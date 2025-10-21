@@ -28,13 +28,17 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.android.learning.securitysnack.db.NotesDatabase
+import com.android.learning.securitysnack.ui.screens.ESPScreen
 import com.android.learning.securitysnack.ui.screens.NotesScreen
 import com.android.learning.securitysnack.ui.sealed.ScreenState
 
 import com.android.learning.securitysnack.ui.theme.SecuritysnackTheme
 import com.android.learning.securitysnack.ui.viewmodels.MainviewModel
 import com.android.learning.securitysnack.ui.viewmodels.MainviewModelFactory
+import com.android.learning.securitysnack.utilities.ESPenum
 
 
 class MainActivity : FragmentActivity() {
@@ -42,6 +46,9 @@ class MainActivity : FragmentActivity() {
     lateinit var mainviewModel: MainviewModel
 
     lateinit var database : NotesDatabase
+
+    lateinit var masterKey: MasterKey
+    lateinit var sharedPreferences: SharedPreferences
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +61,17 @@ class MainActivity : FragmentActivity() {
         ).build()
         val factory = MainviewModelFactory(database.notesDao())
         mainviewModel = ViewModelProvider.create(this,factory)[MainviewModel::class]
+        masterKey = MasterKey.Builder(this, ESPenum.ALIAS.value)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        sharedPreferences = EncryptedSharedPreferences.create(
+            this,
+            ESPenum.FILE_NAME.value,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
         setContent {
             val screenState by remember { mainviewModel.screenState }
             val backClick = { mainviewModel.screenState.value = ScreenState.Home }
@@ -62,8 +80,10 @@ class MainActivity : FragmentActivity() {
                     val modifier = Modifier.padding(innerPadding)
                     when(screenState){
                         is ScreenState.Home -> Home(modifier,mainviewModel)
-                        is ScreenState.Notes -> NotesScreen(modifier,backClick,mainviewModel)
-                        is ScreenState.ESP -> {}
+                        is ScreenState.Notes -> NotesScreen(modifier,mainviewModel)
+                        is ScreenState.ESP -> {
+                            ESPScreen(modifier,sharedPreferences)
+                        }
                         is ScreenState.BioAuth -> {}
                     }
                     BackHandler {
@@ -85,6 +105,9 @@ fun Home( modifier: Modifier = Modifier,
         Text("Welcome to Security Snack!")
         Button(onClick = {mainviewModel.screenState.value = ScreenState.Notes}) {
             Text("Go to notes screen")
+        }
+        Button(onClick = {mainviewModel.screenState.value = ScreenState.ESP}) {
+            Text("Go to encrypted shared pref screen")
         }
 
 

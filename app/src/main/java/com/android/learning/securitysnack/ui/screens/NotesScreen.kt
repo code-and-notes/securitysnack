@@ -1,5 +1,6 @@
 package com.android.learning.securitysnack.ui.screens
 
+import android.R.attr.onClick
 import android.text.BoringLayout
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,24 +25,29 @@ import com.android.learning.securitysnack.db.entities.SecuredTitle
 import com.android.learning.securitysnack.ui.viewmodels.MainviewModel
 
 @Composable
-fun NotesScreen(modifier: Modifier = Modifier, backClick:()->Unit = {},mainviewModel: MainviewModel){
+fun NotesScreen(modifier: Modifier = Modifier, mainviewModel: MainviewModel) {
     Column(
-        modifier =modifier.padding(5.dp).fillMaxSize(),
+        modifier = modifier
+            .padding(5.dp)
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         var title: String by remember { mutableStateOf("") }
-        val notes:List<Notes> by mainviewModel.notes.collectAsState()
-        var showNotes : Boolean by remember { mutableStateOf(false) }
+        val notes: List<Notes> by mainviewModel.notes.collectAsState()
+        var showNotes: Boolean by remember { mutableStateOf(false) }
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(title, onValueChange = { title = it })
             Button(onClick = {
-                mainviewModel.insertNote(Notes(title = SecuredTitle(title)))
-                title = ""
-            }) {
+                if (title.isNotEmpty()) {
+                    mainviewModel.insertNote(Notes(title = SecuredTitle(title)))
+                    title = ""
+                }
+            }
+            ) {
                 Text("Save")
             }
         }
@@ -52,7 +58,7 @@ fun NotesScreen(modifier: Modifier = Modifier, backClick:()->Unit = {},mainviewM
         }) {
             Text("View Saved Notes or Hide")
         }
-        if(showNotes) {
+        if (showNotes) {
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(3.dp)
